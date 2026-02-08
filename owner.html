@@ -811,7 +811,7 @@
         class OwnerCallSystem {
             constructor() {
                 // ⚡ CONFIGURATION - CHANGE THIS TO YOUR FLY.IO SERVER
-                this.SERVER_HOST = "your-peerjs-server.fly.dev"; // ← YOUR FLY.IO APP NAME
+                this.SERVER_HOST = "call2render.onrender.com/peerjs"; // ← YOUR FLY.IO APP NAME
                 this.PERMANENT_ID = "support-agent"; // ← CHANGE TO YOUR DESIRED PERMANENT ID
                 
                 this.peer = null;
@@ -941,9 +941,8 @@
                     config: {
                         'iceServers': [
                             { urls: 'stun:stun.l.google.com:19302' },
-                            { urls: 'stun:global.stun.twilio.com:3478' },
-                            { urls: 'stun:stun1.l.google.com:19302' },
-                            { urls: 'stun:stun2.l.google.com:19302' }
+                            { urls: 'stun:global.stun.twilio.com:3478' }
+                        
                         ]
                     },
                     debug: 2
@@ -1520,6 +1519,20 @@
                 );
             });
         }
+        // Debug connection
+setTimeout(() => {
+    console.log("=== DEBUG INFO ===");
+    console.log("Server URL:", this.SERVER_HOST);
+    console.log("Peer object:", this.peer);
+    console.log("Peer ID:", this.peer?.id);
+    console.log("Disconnected:", this.peer?.disconnected);
+    console.log("==================");
+    
+    // Test server connection
+    fetch("https://call2render.onrender.com/health")
+        .then(r => r.json())
+        .then(data => console.log("Server health:", data));
+}, 2000);
     </script>
 </body>
 </html>
