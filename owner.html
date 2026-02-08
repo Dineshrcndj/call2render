@@ -811,11 +811,9 @@
         class OwnerCallSystem {
             constructor() {
                 // ⚡ CONFIGURATION - CHANGE THIS TO YOUR FLY.IO SERVER
-<<<<<<< HEAD
-                this.SERVER_HOST = "call2render.onrender.com/peerjs"; // ← YOUR FLY.IO APP NAME
-=======
-                this.SERVER_HOST = "call2render.onrender.com"; // ← YOUR FLY.IO APP NAME
->>>>>>> e044a24a6f3e888670b0bee99f2a7257d72f89fc
+
+                this.SERVER_HOST = "signaling.freep2p.com"; // ← YOUR FLY.IO APP NAME
+
                 this.PERMANENT_ID = "support-agent"; // ← CHANGE TO YOUR DESIRED PERMANENT ID
                 
                 this.peer = null;
@@ -945,9 +943,7 @@
                     config: {
                         'iceServers': [
                             { urls: 'stun:stun.l.google.com:19302' },
-                            { urls: 'stun:global.stun.twilio.com:3478' }
-                        
-                        ]
+                                         ]
                     },
                     debug: 2
                 });
