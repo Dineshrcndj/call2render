@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Console - 24/7 Receiver</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 25px 75px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo {
+            font-size: 70px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+        }
+        
+        .subtitle {
+            color: #a0c8e0;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .permanent-id-card {
+            background: linear-gradient(135deg, rgba(0, 180, 219, 0.2) 0%, rgba(0, 131, 176, 0.2) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(0, 180, 219, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .permanent-id-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #00b4db, #0083b0);
+        }
+        
+        .id-display {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            word-break: break-all;
+            border: 1px solid rgba(0, 180, 219, 0.5);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .id-display:hover {
+            background: rgba(0, 180, 219, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 180, 219, 0.3);
+        }
+        
+        .id-display:active {
+            transform: translateY(0);
+        }
+        
+        .id-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 180, 219, 0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .id-display:hover .id-copy {
+            opacity: 1;
+        }
+        
+        .status-card {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(46, 125, 50, 0.1) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 35px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 22px;
+            margin-bottom: 25px;
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .online { 
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.3) 0%, rgba(46, 125, 50, 0.3) 100%);
+            border: 2px solid rgba(76, 175, 80, 0.5);
+            color: #a5d6a7;
+            animation: statusGlow 2s infinite;
+        }
+        
+        .offline { 
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.3) 0%, rgba(198, 40, 40, 0.3) 100%);
+            border: 2px solid rgba(244, 67, 54, 0.5);
+            color: #ef9a9a;
+        }
+        
+        .busy { 
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.3) 0%, rgba(239, 108, 0, 0.3) 100%);
+            border: 2px solid rgba(255, 152, 0, 0.5);
+            color: #ffcc80;
+        }
+        
+        .ringing { 
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.3) 0%, rgba(123, 31, 162, 0.3) 100%);
+            border: 2px solid rgba(156, 39, 176, 0.5);
+            color: #e1bee7;
+            animation: ringGlow 1s infinite, ringPulse 0.5s infinite;
+        }
+        
+        @keyframes statusGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(76, 175, 80, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(76, 175, 80, 0.6); }
+        }
+        
+        @keyframes ringGlow {
+            0%, 100% { box-shadow: 0 0 30px rgba(156, 39, 176, 0.5); }
+            50% { box-shadow: 0 0 60px rgba(156, 39, 176, 0.8); }
+        }
+        
+        @keyframes ringPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .status-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px currentColor;
+        }
+        
+        .dot-green { background: #4CAF50; }
+        .dot-red { background: #f44336; }
+        .dot-yellow { background: #ff9800; }
+        .dot-purple { background: #9C27B0; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .stat-box:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 180, 219, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 180, 219, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .stat-label {
+            color: #a0c8e0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .call-card {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(123, 31, 162, 0.1) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(156, 39, 176, 0.3);
+            display: none;
+            animation: slideUp 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .call-card.active {
+            display: block;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .call-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #9C27B0, #7B1FA2);
+        }
+        
+        .call-icon {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: ringSpin 2s linear infinite;
+        }
+        
+        @keyframes ringSpin {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-15deg); }
+            100% { transform: rotate(0deg); }
+        }
+        
+        .call-info {
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .caller-id {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .call-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 18px 40px;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-width: 160px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(-2px);
+        }
+        
+        .btn-accept {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+        }
+        
+        .btn-reject {
+            background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+            color: white;
+        }
+        
+        .btn-end {
+            background: linear-gradient(135deg, #ff9800 0%, #ef6c00 100%);
+            color: white;
+            width: 100%;
+            margin-top: 30px;
+        }
+        
+        .active-call-card {
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(21, 101, 192, 0.1) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(33, 150, 243, 0.3);
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+        
+        .active-call-card.active {
+            display: block;
+        }
+        
+        .active-call-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #2196F3, #0D47A1);
+        }
+        
+        .call-timer {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(33, 150, 243, 0.5);
+        }
+        
+        audio {
+            width: 100%;
+            margin: 25px 0;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        audio::-webkit-media-controls-panel {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+        
+        .connections-card {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 160, 0, 0.1) 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid rgba(255, 193, 7, 0.3);
+            grid-column: 1 / -1;
+            margin-top: 30px;
+        }
+        
+        .connections-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #FFC107, #FFA000);
+        }
+        
+        .connections-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            padding-right: 10px;
+        }
+        
+        .connection-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 5px solid #4CAF50;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .connection-item:hover {
+            background: rgba(0, 0, 0, 0.4);
+            transform: translateX(5px);
+        }
+        
+        .connection-item.in-call {
+            border-left-color: #2196F3;
+            background: rgba(33, 150, 243, 0.1);
+        }
+        
+        .connection-id {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            flex: 1;
+        }
+        
+        .connection-status {
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background: rgba(76, 175, 80, 0.3);
+            color: #a5d6a7;
+            margin-left: 10px;
+        }
+        
+        .connection-status.in-call {
+            background: rgba(33, 150, 243, 0.3);
+            color: #90caf9;
+        }
+        
+        .server-info {
+            background: linear-gradient(135deg, rgba(103, 58, 183, 0.1) 0%, rgba(81, 45, 168, 0.1) 100%);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(103, 58, 183, 0.3);
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .server-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #673AB7, #512DA8);
+        }
+        
+        .server-details {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .server-details h3 {
+            color: #d1c4e9;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .server-url {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .server-health {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 20px;
+            color: #a5d6a7;
+            font-weight: bold;
+        }
+        
+        .health-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: healthPulse 2s infinite;
+        }
+        
+        @keyframes healthPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            padding: 20px 30px;
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            z-index: 10000;
+            animation: slideInRight 0.4s ease, slideOutRight 0.4s ease 2.6s;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            border-left: 6px solid currentColor;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .notification-success { 
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            border-left-color: #1B5E20;
+        }
+        
+        .notification-error { 
+            background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+            border-left-color: #b71c1c;
+        }
+        
+        .notification-info { 
+            background: linear-gradient(135deg, #2196F3 0%, #0D47A1 100%);
+            border-left-color: #0D47A1;
+        }
+        
+        .notification-warning { 
+            background: linear-gradient(135deg, #ff9800 0%, #ef6c00 100%);
+            border-left-color: #e65100;
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(194, 24, 91, 0.1) 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            border: 2px solid rgba(233, 30, 99, 0.3);
+        }
+        
+        .instructions h3 {
+            color: #f48fb1;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+            color: #fce4ec;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            color: #78909c;
+            font-size: 14px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 180, 219, 0.5);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 180, 219, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard">
+            <div class="header">
+                <div class="logo">🎧</div>
+                <h1>Support Agent Console</h1>
+                <p class="subtitle">24/7 Call Receiver • Permanent ID • Unlimited Connections</p>
+            </div>
+            
+            <div class="permanent-id-card">
+                <h2>Your Permanent ID</h2>
+                <p style="color: #a0c8e0; margin-bottom: 15px;">Users connect to this ID automatically</p>
+                <div class="id-display" id="ownerIdDisplay">
+                    support-agent-007
+                    <div class="id-copy">Click to copy</div>
+                </div>
+                <p style="font-size: 14px; color: #81d4fa; text-align: center;">
+                    This ID never changes • Users always reach you
+                </p>
+            </div>
+            
+            <div class="status-card">
+                <h2>System Status</h2>
+                <div class="status-indicator offline" id="statusIndicator">
+                    <span class="status-dot dot-red"></span>
+                    <span id="statusText">Connecting...</span>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Connected Users</div>
+                        <div class="stat-value" id="connectedUsers">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Calls</div>
+                        <div class="stat-value" id="totalCalls">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Active Calls</div>
+                        <div class="stat-value" id="activeCalls">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="call-card" id="incomingCallCard">
+                <div class="call-icon">📞</div>
+                <h2>Incoming Call!</h2>
+                <div class="call-info">
+                    <p>User is calling you</p>
+                    <div class="caller-id" id="callerIdDisplay">Loading...</div>
+                    <p style="color: #e1bee7; font-size: 14px;">Call will auto-reject in 30 seconds</p>
+                </div>
+                
+                <div class="call-controls">
+                    <button class="btn btn-accept" id="acceptBtn">
+                        <span>✅</span> Accept Call
+                    </button>
+                    <button class="btn btn-reject" id="rejectBtn">
+                        <span>❌</span> Reject
+                    </button>
+                </div>
+            </div>
+            
+            <div class="active-call-card" id="activeCallCard">
+                <h2>Active Call</h2>
+                <div class="call-timer" id="callTimer">00:00</div>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <div style="font-size: 14px; color: #90caf9;">User Audio</div>
+                    <audio id="remoteAudio" controls autoplay></audio>
+                </div>
+                
+                <button class="btn btn-end" id="endCallBtn">
+                    <span>📞</span> End Call
+                </button>
+            </div>
+            
+            <div class="connections-card">
+                <h2>Connected Users</h2>
+                <div id="connectionsContainer" class="connections-list">
+                    <div style="text-align: center; padding: 30px; color: #a0c8e0;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">👥</div>
+                        <p>No users connected yet</p>
+                        <p style="font-size: 14px; margin-top: 10px;">Users will appear here when they connect</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="server-info">
+                <div class="server-details">
+                    <h3><span>🌐</span> Server Information</h3>
+                    <div class="server-url" id="serverUrl">your-peerjs-server.fly.dev</div>
+                    <div class="server-health" id="serverHealth">
+                        <span class="health-dot"></span>
+                        <span>Checking server...</span>
+                    </div>
+                </div>
+                <div style="min-width: 200px;">
+                    <div style="font-size: 14px; color: #d1c4e9; margin-bottom: 10px;">Server Stats:</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 12px; color: #a0c8e0;">Uptime</div>
+                            <div id="serverUptime">0s</div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+                            <div style="font-size: 12px; color: #a0c8e0;">Memory</div>
+                            <div id="serverMemory">0 MB</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3><span>⚡</span> How This Works</h3>
+                <ul>
+                    <li><strong>Keep this page open</strong> - It's your 24/7 call receiver</li>
+                    <li><strong>Users connect automatically</strong> - No IDs to share</li>
+                    <li><strong>Click "Accept Call"</strong> - When you hear the ringtone</li>
+                    <li><strong>Talk naturally</strong> - Audio quality is optimized</li>
+                    <li><strong>Install as PWA</strong> - For always-on functionality</li>
+                </ul>
+                <p style="margin-top: 15px; font-size: 13px; color: #f48fb1;">
+                    <strong>Note:</strong> Runs on Fly.io free tier • Unlimited uptime • 500 concurrent connections
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div>Powered by Fly.io • 24/7 Unlimited Server • PeerJS Signaling</div>
+            <div style="margin-top: 10px; font-size: 12px; color: #546e7a;">
+                Server Time: <span id="serverTime">Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification"></div>
+    
+    <!-- PeerJS Library -->
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
+    <script>
+        // ========== OWNER SYSTEM WITH PERMANENT ID ==========
+        class OwnerCallSystem {
+            constructor() {
+                // ⚡ CONFIGURATION - CHANGE THIS TO YOUR FLY.IO SERVER
+                this.SERVER_HOST = "your-peerjs-server.fly.dev"; // ← YOUR FLY.IO APP NAME
+                this.PERMANENT_ID = "support-agent"; // ← CHANGE TO YOUR DESIRED PERMANENT ID
+                
+                this.peer = null;
+                this.dataConnections = new Map();     // Connected users
+                this.mediaConnections = new Map();    // Active calls
+                this.localStream = null;
+                this.currentCaller = null;
+                this.isInCall = false;
+                this.callStartTime = null;
+                this.callTimerInterval = null;
+                this.autoRejectTimer = null;
+                this.serverStats = {
+                    connectedUsers: 0,
+                    totalCalls: 0,
+                    activeCalls: 0,
+                    serverUptime: 0,
+                    serverMemory: 0
+                };
+                
+                // DOM Elements
+                this.ownerIdDisplay = document.getElementById('ownerIdDisplay');
+                this.statusIndicator = document.getElementById('statusIndicator');
+                this.statusText = document.getElementById('statusText');
+                this.incomingCallCard = document.getElementById('incomingCallCard');
+                this.activeCallCard = document.getElementById('activeCallCard');
+                this.remoteAudio = document.getElementById('remoteAudio');
+                this.acceptBtn = document.getElementById('acceptBtn');
+                this.rejectBtn = document.getElementById('rejectBtn');
+                this.endCallBtn = document.getElementById('endCallBtn');
+                this.callerIdDisplay = document.getElementById('callerIdDisplay');
+                this.callTimer = document.getElementById('callTimer');
+                this.connectedUsers = document.getElementById('connectedUsers');
+                this.totalCalls = document.getElementById('totalCalls');
+                this.activeCalls = document.getElementById('activeCalls');
+                this.connectionsContainer = document.getElementById('connectionsContainer');
+                this.serverUrl = document.getElementById('serverUrl');
+                this.serverHealth = document.getElementById('serverHealth');
+                this.serverUptime = document.getElementById('serverUptime');
+                this.serverMemory = document.getElementById('serverMemory');
+                this.serverTime = document.getElementById('serverTime');
+                this.notification = document.getElementById('notification');
+                
+                this.init();
+            }
+            
+            async init() {
+                console.log("🚀 Initializing Owner System with Permanent ID");
+                console.log(`🌐 Server: ${this.SERVER_HOST}`);
+                console.log(`🎯 Permanent ID: ${this.PERMANENT_ID}`);
+                
+                // Display permanent ID
+                this.ownerIdDisplay.textContent = this.PERMANENT_ID;
+                this.ownerIdDisplay.onclick = () => {
+                    navigator.clipboard.writeText(this.PERMANENT_ID);
+                    this.showNotification("Permanent ID copied to clipboard!", "success");
+                };
+                
+                // Display server URL
+                this.serverUrl.textContent = this.SERVER_HOST;
+                
+                // Check server health first
+                await this.checkServerHealth();
+                
+                // Initialize PeerJS with PERMANENT ID and our Fly.io server
+                this.initializePeer();
+                
+                // Setup event listeners
+                this.setupEventListeners();
+                
+                // Request microphone
+                await this.requestMicrophone();
+                
+                // Setup PWA features
+                this.setupPWA();
+                
+                // Start server monitoring
+                this.startServerMonitoring();
+                
+                // Update server time
+                this.updateServerTime();
+                setInterval(() => this.updateServerTime(), 1000);
+                
+                console.log("✅ Owner system ready. Users can connect directly.");
+            }
+            
+            async checkServerHealth() {
+                try {
+                    const response = await fetch(`https://${this.SERVER_HOST}/health`, {
+                        method: 'GET',
+                        mode: 'cors',
+                        cache: 'no-cache'
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.serverStats.serverUptime = data.uptime || 0;
+                        this.serverStats.serverMemory = data.memory?.used || "0 MB";
+                        this.updateServerStatsDisplay();
+                        
+                        this.serverHealth.innerHTML = `
+                            <span class="health-dot"></span>
+                            <span>Server Online (${data.connections || 0} connections)</span>
+                        `;
+                        console.log("✅ Server health check passed");
+                    } else {
+                        throw new Error(`Server returned ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error("❌ Server health check failed:", error);
+                    this.serverHealth.innerHTML = `
+                        <span class="health-dot" style="background: #f44336;"></span>
+                        <span>Server Offline - Check Fly.io</span>
+                    `;
+                    this.showNotification("Server is offline. Please check Fly.io deployment.", "error", 5000);
+                }
+            }
+            
+            initializePeer() {
+                console.log("Connecting to signaling server with permanent ID...");
+                
+                // ⚡ IMPORTANT: Use your Fly.io server configuration
+                this.peer = new Peer(this.PERMANENT_ID, {
+                    host: this.SERVER_HOST,
+                    port: 443,
+                    path: '/peerjs',  // Match server path
+                    secure: true,
+                    config: {
+                        'iceServers': [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:global.stun.twilio.com:3478' },
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' }
+                        ]
+                    },
+                    debug: 2
+                });
+                
+                this.setupPeerListeners();
+            }
+            
+            setupPeerListeners() {
+                // When connected to signaling server
+                this.peer.on('open', (id) => {
+                    console.log(`✅ Connected as: ${id}`);
+                    this.updateStatus('online');
+                    this.showNotification("Ready to receive calls", "success");
+                    
+                    // Verify ID matches our permanent ID
+                    if (id !== this.PERMANENT_ID) {
+                        console.warn(`ID mismatch! Expected ${this.PERMANENT_ID}, got ${id}`);
+                        this.showNotification(`Connected as ${id}`, "info");
+                    }
+                });
+                
+                // Handle incoming data connections (users connecting)
+                this.peer.on('connection', (connection) => {
+                    const userId = connection.peer;
+                    console.log(`📡 New user connected: ${userId}`);
+                    
+                    // Store the connection
+                    this.dataConnections.set(userId, connection);
+                    this.updateStats();
+                    this.updateConnectionsList();
+                    
+                    // Setup data connection handlers
+                    this.setupDataConnection(connection);
+                    
+                    // Send status to user
+                    connection.send({
+                        type: 'owner-status',
+                        status: this.isInCall ? 'busy' : 'available'
+                    });
+                    
+                    // Show notification
+                    this.showNotification(`User connected: ${userId.substring(0, 12)}...`, "info");
+                });
+                
+                // Handle incoming calls
+                this.peer.on('call', async (call) => {
+                    const callerId = call.peer;
+                    console.log(`📞 Incoming call from: ${callerId}`);
+                    
+                    // Ignore if already in call
+                    if (this.isInCall) {
+                        console.log("Busy - rejecting call");
+                        const userConn = this.dataConnections.get(callerId);
+                        if (userConn) {
+                            userConn.send({ type: 'owner-busy' });
+                        }
+                        call.close();
+                        return;
+                    }
+                    
+                    // Store the call
+                    this.currentCaller = callerId;
+                    this.mediaConnections.set(callerId, call);
+                    
+                    // Show incoming call UI
+                    this.showIncomingCall(callerId);
+                    
+                    // Auto-reject after 30 seconds if not manually handled
+                    this.autoRejectTimer = setTimeout(() => {
+                        if (this.currentCaller === callerId) {
+                            console.log("Auto-rejecting call after 30 seconds");
+                            this.rejectCall();
+                        }
+                    }, 30000);
+                });
+                
+                // Handle errors
+                this.peer.on('error', (err) => {
+                    console.error("PeerJS error:", err);
+                    
+                    if (err.type === 'unavailable-id') {
+                        console.error("Permanent ID is unavailable. It might be in use elsewhere.");
+                        this.showNotification("ID unavailable - trying alternative...", "error");
+                        
+                        // Try with timestamp suffix
+                        setTimeout(() => {
+                            const altId = `${this.PERMANENT_ID}-${Date.now()}`;
+                            console.log(`Trying alternative ID: ${altId}`);
+                            this.showNotification(`Using ID: ${altId}`, "warning");
+                            this.peer.destroy();
+                            this.PERMANENT_ID = altId;
+                            this.ownerIdDisplay.textContent = altId;
+                            this.initializePeer();
+                        }, 5000);
+                    } else if (err.type === 'network') {
+                        this.updateStatus('offline');
+                        setTimeout(() => {
+                            if (this.peer.disconnected) {
+                                console.log("Attempting to reconnect...");
+                                this.peer.reconnect();
+                            }
+                        }, 3000);
+                    } else if (err.type === 'socket-error') {
+                        this.updateStatus('offline');
+                        this.showNotification("Lost connection to server", "error");
+                        setTimeout(() => {
+                            console.log("Reconnecting to server...");
+                            this.initializePeer();
+                        }, 5000);
+                    }
+                });
+                
+                this.peer.on('disconnected', () => {
+                    console.log("Disconnected from signaling server");
+                    this.updateStatus('offline');
+                    
+                    // Auto-reconnect after 2 seconds
+                    setTimeout(() => {
+                        if (this.peer && this.peer.disconnected) {
+                            console.log("Attempting to reconnect...");
+                            this.peer.reconnect();
+                        }
+                    }, 2000);
+                });
+            }
+            
+            async requestMicrophone() {
+                try {
+                    this.localStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true,
+                            sampleRate: 48000,
+                            channelCount: 1
+                        },
+                        video: false
+                    });
+                    console.log("🎤 Microphone ready");
+                } catch (error) {
+                    console.error("Microphone error:", error);
+                    this.showNotification("Microphone access required for calls", "error");
+                }
+            }
+            
+            setupDataConnection(connection) {
+                const userId = connection.peer;
+                
+                connection.on('data', (data) => {
+                    console.log(`Data from ${userId}:`, data);
+                    
+                    switch (data.type) {
+                        case 'call-ended':
+                            // User ended the call
+                            this.endCall();
+                            break;
+                        case 'ping':
+                            // Keep-alive ping
+                            connection.send({ type: 'pong', timestamp: Date.now() });
+                            break;
+                    }
+                });
+                
+                connection.on('close', () => {
+                    console.log(`User disconnected: ${userId}`);
+                    this.dataConnections.delete(userId);
+                    this.mediaConnections.delete(userId);
+                    this.updateStats();
+                    this.updateConnectionsList();
+                    
+                    // If this was the current caller, end the call
+                    if (this.currentCaller === userId) {
+                        this.endCall();
+                    }
+                    
+                    this.showNotification(`User disconnected: ${userId.substring(0, 12)}...`, "info");
+                });
+                
+                connection.on('error', (err) => {
+                    console.error(`Connection error from ${userId}:`, err);
+                });
+            }
+            
+            setupEventListeners() {
+                // Accept call button
+                this.acceptBtn.addEventListener('click', () => this.acceptCall());
+                
+                // Reject call button
+                this.rejectBtn.addEventListener('click', () => this.rejectCall());
+                
+                // End call button
+                this.endCallBtn.addEventListener('click', () => this.endCall());
+            }
+            
+            showIncomingCall(callerId) {
+                // Clear any auto-reject timer
+                if (this.autoRejectTimer) {
+                    clearTimeout(this.autoRejectTimer);
+                    this.autoRejectTimer = null;
+                }
+                
+                // Update UI
+                const shortId = callerId.length > 24 ? callerId.substring(0, 24) + '...' : callerId;
+                this.callerIdDisplay.textContent = shortId;
+                this.callerIdDisplay.title = callerId; // Full ID on hover
+                this.incomingCallCard.classList.add('active');
+                this.updateStatus('ringing');
+                
+                // Play ringtone
+                this.playRingtone();
+            }
+            
+            hideIncomingCall() {
+                this.incomingCallCard.classList.remove('active');
+                this.stopRingtone();
+            }
+            
+            async acceptCall() {
+                if (!this.currentCaller || !this.localStream) return;
+                
+                const call = this.mediaConnections.get(this.currentCaller);
+                if (!call) return;
+                
+                try {
+                    console.log("Accepting call...");
+                    
+                    // Answer the call
+                    call.answer(this.localStream);
+                    
+                    // Handle the remote audio stream
+                    call.on('stream', (remoteStream) => {
+                        console.log("Received user audio stream");
+                        this.remoteAudio.srcObject = remoteStream;
+                        this.showActiveCall();
+                        this.hideIncomingCall();
+                        this.isInCall = true;
+                        this.updateStatus('busy');
+                        this.serverStats.totalCalls++;
+                        this.serverStats.activeCalls = 1;
+                        this.updateStats();
+                        
+                        // Start call timer
+                        this.startCallTimer();
+                        
+                        // Notify the user
+                        const userConn = this.dataConnections.get(this.currentCaller);
+                        if (userConn) {
+                            userConn.send({ type: 'call-accepted' });
+                        }
+                        
+                        // Notify all other users that owner is busy
+                        this.broadcastToAllUsers({ 
+                            type: 'owner-status', 
+                            status: 'busy' 
+                        }, this.currentCaller);
+                        
+                        this.showNotification("Call connected", "success");
+                    });
+                    
+                    call.on('close', () => {
+                        console.log("Call closed by user");
+                        this.endCall();
+                    });
+                    
+                    call.on('error', (err) => {
+                        console.error("Call error:", err);
+                        this.endCall();
+                        this.showNotification("Call error", "error");
+                    });
+                    
+                } catch (error) {
+                    console.error("Error accepting call:", error);
+                    this.endCall();
+                    this.showNotification("Failed to accept call", "error");
+                }
+            }
+            
+            rejectCall() {
+                console.log("Rejecting call");
+                
+                if (this.currentCaller) {
+                    // Notify the user
+                    const userConn = this.dataConnections.get(this.currentCaller);
+                    if (userConn) {
+                        userConn.send({ type: 'call-rejected' });
+                    }
+                    
+                    // Close the call
+                    const call = this.mediaConnections.get(this.currentCaller);
+                    if (call) {
+                        call.close();
+                    }
+                    
+                    // Clean up
+                    this.mediaConnections.delete(this.currentCaller);
+                    this.hideIncomingCall();
+                    this.currentCaller = null;
+                    this.updateStatus('online');
+                    
+                    this.showNotification("Call rejected", "info");
+                }
+            }
+            
+            endCall() {
+                console.log("Ending call");
+                
+                // Clear call timer
+                if (this.callTimerInterval) {
+                    clearInterval(this.callTimerInterval);
+                    this.callTimerInterval = null;
+                }
+                
+                // Close all media connections
+                this.mediaConnections.forEach((call, peerId) => {
+                    call.close();
+                });
+                this.mediaConnections.clear();
+                
+                // Clear audio
+                if (this.remoteAudio.srcObject) {
+                    this.remoteAudio.srcObject = null;
+                }
+                
+                // Reset state
+                this.isInCall = false;
+                this.currentCaller = null;
+                this.serverStats.activeCalls = 0;
+                
+                // Update UI
+                this.hideActiveCall();
+                this.hideIncomingCall();
+                this.updateStatus('online');
+                this.updateStats();
+                
+                // Notify all users that owner is available again
+                this.broadcastToAllUsers({ 
+                    type: 'owner-status', 
+                    status: 'available' 
+                });
+                
+                this.showNotification("Call ended", "info");
+            }
+            
+            showActiveCall() {
+                this.activeCallCard.classList.add('active');
+            }
+            
+            hideActiveCall() {
+                this.activeCallCard.classList.remove('active');
+                this.callTimer.textContent = '00:00';
+            }
+            
+            startCallTimer() {
+                this.callStartTime = Date.now();
+                
+                this.callTimerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - this.callStartTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    this.callTimer.textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+            
+            broadcastToAllUsers(data, excludePeer = null) {
+                this.dataConnections.forEach((conn, peerId) => {
+                    if (peerId !== excludePeer && conn.open) {
+                        conn.send(data);
+                    }
+                });
+            }
+            
+            updateStatus(status) {
+                const statusMap = {
+                    online: { 
+                        class: 'online', 
+                        text: 'Online', 
+                        dot: 'dot-green',
+                        message: 'Ready to receive calls' 
+                    },
+                    offline: { 
+                        class: 'offline', 
+                        text: 'Offline', 
+                        dot: 'dot-red',
+                        message: 'Connecting...' 
+                    },
+                    busy: { 
+                        class: 'busy', 
+                        text: 'In Call', 
+                        dot: 'dot-yellow',
+                        message: 'Currently in a call' 
+                    },
+                    ringing: { 
+                        class: 'ringing', 
+                        text: 'Incoming Call', 
+                        dot: 'dot-purple',
+                        message: 'Answer the call!' 
+                    }
+                };
+                
+                const statusInfo = statusMap[status];
+                this.statusIndicator.className = `status-indicator ${statusInfo.class}`;
+                this.statusText.textContent = statusInfo.text;
+                
+                // Update dot
+                const dot = this.statusIndicator.querySelector('.status-dot');
+                if (dot) {
+                    dot.className = `status-dot ${statusInfo.dot}`;
+                }
+            }
+            
+            updateStats() {
+                this.serverStats.connectedUsers = this.dataConnections.size;
+                this.connectedUsers.textContent = this.serverStats.connectedUsers;
+                this.totalCalls.textContent = this.serverStats.totalCalls;
+                this.activeCalls.textContent = this.serverStats.activeCalls;
+                
+                this.updateConnectionsList();
+            }
+            
+            updateConnectionsList() {
+                if (this.dataConnections.size === 0) {
+                    this.connectionsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 30px; color: #a0c8e0;">
+                            <div style="font-size: 48px; margin-bottom: 15px;">👥</div>
+                            <p>No users connected yet</p>
+                            <p style="font-size: 14px; margin-top: 10px;">Users will appear here when they connect</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                this.dataConnections.forEach((conn, peerId) => {
+                    const shortId = peerId.length > 20 ? peerId.substring(0, 20) + '...' : peerId;
+                    const inCall = this.mediaConnections.has(peerId);
+                    const statusClass = inCall ? 'in-call' : '';
+                    const statusText = inCall ? 'In Call' : 'Connected';
+                    
+                    html += `
+                        <div class="connection-item ${statusClass}" title="${peerId}">
+                            <div class="connection-id">${shortId}</div>
+                            <div class="connection-status ${inCall ? 'in-call' : ''}">${statusText}</div>
+                        </div>
+                    `;
+                });
+                
+                this.connectionsContainer.innerHTML = html;
+            }
+            
+            updateServerStatsDisplay() {
+                const uptime = Math.floor(this.serverStats.serverUptime);
+                if (uptime < 60) {
+                    this.serverUptime.textContent = `${uptime}s`;
+                } else if (uptime < 3600) {
+                    this.serverUptime.textContent = `${Math.floor(uptime/60)}m ${uptime%60}s`;
+                } else {
+                    this.serverUptime.textContent = `${Math.floor(uptime/3600)}h ${Math.floor((uptime%3600)/60)}m`;
+                }
+                
+                this.serverMemory.textContent = this.serverStats.serverMemory;
+            }
+            
+            updateServerTime() {
+                const now = new Date();
+                this.serverTime.textContent = now.toLocaleTimeString();
+            }
+            
+            playRingtone() {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.type = 'sine';
+                    oscillator.frequency.value = 800;
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                    
+                    // Repeat every 2 seconds
+                    this.ringtoneInterval = setInterval(() => {
+                        if (this.incomingCallCard.classList.contains('active')) {
+                            oscillator.start();
+                            oscillator.stop(audioContext.currentTime + 0.5);
+                        }
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.log("Could not play ringtone:", error);
+                }
+            }
+            
+            stopRingtone() {
+                if (this.ringtoneInterval) {
+                    clearInterval(this.ringtoneInterval);
+                    this.ringtoneInterval = null;
+                }
+            }
+            
+            showNotification(message, type, duration = 3000) {
+                this.notification.textContent = message;
+                this.notification.className = `notification notification-${type}`;
+                this.notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    this.notification.style.display = 'none';
+                }, duration);
+            }
+            
+            setupPWA() {
+                // Request wake lock to prevent screen sleep
+                if ('wakeLock' in navigator) {
+                    navigator.wakeLock.request('screen').catch(console.error);
+                }
+                
+                // Keep alive ping to users
+                setInterval(() => {
+                    if (this.peer && !this.peer.disconnected) {
+                        this.broadcastToAllUsers({ 
+                            type: 'ping', 
+                            timestamp: Date.now() 
+                        });
+                    }
+                }, 30000); // Every 30 seconds
+            }
+            
+            startServerMonitoring() {
+                // Monitor server health every 30 seconds
+                setInterval(() => {
+                    this.checkServerHealth();
+                }, 30000);
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            // Check for WebRTC support
+            if (!navigator.mediaDevices || !window.Peer) {
+                alert("Your browser doesn't support voice calls. Please use Chrome, Firefox, or Edge.");
+                return;
+            }
+            
+            // Initialize system
+            window.ownerSystem = new OwnerCallSystem();
+        });
+        
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log("Console is in background");
+            } else {
+                console.log("Console is in foreground");
+            }
+        });
+        
+        // Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(
+                    registration => {
+                        console.log('ServiceWorker registered');
+                    },
+                    err => {
+                        console.log('ServiceWorker registration failed:', err);
+                    }
+                );
+            });
+        }
+    </script>
+</body>
+</html>
